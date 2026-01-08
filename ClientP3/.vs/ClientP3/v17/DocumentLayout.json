@@ -1,0 +1,70 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\ClientP3.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|solutionrelative:ClientP3.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\inputFile.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|solutionrelative:inputFile.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\clientLog.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{E092513B-DD8A-476B-8CB1-ABA216A6A94D}|ClientP3.vcxproj|solutionrelative:clientLog.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ClientP3.cpp",
+              "DocumentMoniker": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\ClientP3.cpp",
+              "RelativeDocumentMoniker": "ClientP3.cpp",
+              "ToolTip": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\ClientP3.cpp",
+              "RelativeToolTip": "ClientP3.cpp",
+              "ViewState": "AQIAADUBAAAAAAAAAAAAAEcBAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-07-28T18:18:32.447Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "inputFile.txt",
+              "DocumentMoniker": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\inputFile.txt",
+              "RelativeDocumentMoniker": "inputFile.txt",
+              "ToolTip": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\inputFile.txt",
+              "RelativeToolTip": "inputFile.txt",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAEAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-07-28T18:47:58.146Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "clientLog.txt",
+              "DocumentMoniker": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\clientLog.txt",
+              "RelativeDocumentMoniker": "clientLog.txt",
+              "ToolTip": "F:\\UMD\\CIS 427\\Programs\\Program 3\\ClientP3\\clientLog.txt",
+              "RelativeToolTip": "clientLog.txt",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-07-29T23:30:02.741Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

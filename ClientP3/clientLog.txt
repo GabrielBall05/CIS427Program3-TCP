@@ -1,0 +1,31 @@
+Log file opened
+Program started
+Winsock Initialized
+Input file opened successfully
+
+Socket creation successful
+Connected to server
+Sent initialization message to server
+Received acknowledgement message from server. Expecting 114 total bytes in response
+Sent hashRequest for segment: 'CIS 427 TCP prog' of length 16 bytes
+Sent hashRequest for segment: 'ram is a fun pro' of length 16 bytes
+Sent hashRequest for segment: 'ject!' of length 5 bytes
+Received hash response #0 from server
+Received hash response #1 from server
+Received hash response #2 from server
+0: 0x43495320343237205443502070726F67
+1: 0x72616D20697320612066756E2070726F
+2: 0x6A656374210000000000000000000000
+Closing connection and moving to next line
+
+Socket creation successful
+Connected to server
+Sent initialization message to server
+Received acknowledgement message from server. Expecting 38 total bytes in response
+Sent hashRequest for segment: 'Z' of length 1 bytes
+Received hash response #0 from server
+0: 0x5A000000000000000000000000000000
+Closing connection and moving to next line
+
+End of input file reached. Closing input file
+Closing log file

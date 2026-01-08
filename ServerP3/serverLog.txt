@@ -1,0 +1,34 @@
+Log file opened
+Program started
+Winsock initialized
+Server socket created successfully
+Socket bind successful
+Listen success. Waiting for client connection
+Client accepted
+Thread created and detached for client #1
+Received initialization message from client. Client #1 will send 3 hash requests
+Acknowledgement message sent to client #1
+Client accepted
+Thread created and detached for client #2
+Received initialization message from client. Client #2 will send 3 hash requests
+Acknowledgement message sent to client #2
+Received Hash Request #0 from client #1
+Payload for client #1 converted to Hex
+HashReponse #0 sent to client #1
+Received Hash Request #1 from client #1
+Payload for client #1 converted to Hex
+HashReponse #1 sent to client #1
+Received Hash Request #2 from client #1
+Payload for client #1 converted to Hex
+HashReponse #2 sent to client #1
+Client #1 closed connection
+Received Hash Request #0 from client #2
+Payload for client #2 converted to Hex
+HashReponse #0 sent to client #2
+Received Hash Request #1 from client #2
+Payload for client #2 converted to Hex
+HashReponse #1 sent to client #2
+Received Hash Request #2 from client #2
+Payload for client #2 converted to Hex
+HashReponse #2 sent to client #2
+Client #2 closed connection

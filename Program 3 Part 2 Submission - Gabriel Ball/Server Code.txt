@@ -1,0 +1,316 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <iostream>
+#include <winsock2.h>
+#include <vector>
+#include <Windows.h>
+#include <fstream>
+#include <string>
+#include <thread>
+#include <mutex>
+#pragma comment(lib, "ws2_32.lib")
+
+using namespace std;
+
+void handleClient(SOCKET clientSocket, ofstream& logFile, int clientId);
+int receiveAll(SOCKET clientSocket, char* buffer, int length);
+bool sendAll(SOCKET clientSocket, const char* buffer, int length);
+void zeroFill(vector<char>& payload);
+string hashFunction(vector<char> payload);
+void logAndOptionallyClose(ofstream& logFile, const string& message, bool close, SOCKET socket);
+void log(ofstream& logFile, string logMessage);
+
+mutex logMutex;
+
+int main(int argc, char* argv[]) {
+    WSADATA wsa;
+    SOCKET serverSocket;
+    SOCKET clientSocket;
+    struct sockaddr_in serverAddress;
+    struct sockaddr_in clientAddress;
+
+    //Server port argument
+    int port = -1;
+    if (argc >= 3 && strcmp(argv[1], "-p") == 0)
+    {
+        port = atoi(argv[2]);
+        if (port <= 1024)
+        {
+            cout << "Invalid port number. Must be > 1024" << endl;
+            return 1;
+        }
+    }
+    else
+    {
+        cout << "Usage: -p <Port Number greater than 1024>" << endl;
+        return 1;
+    }
+
+    //Open log file
+    ofstream logFile("serverLog.txt", ios::trunc);
+    if (!logFile)
+    {
+        cout << "Error: Log file not opened" << endl;
+        return 1;
+    }
+    log(logFile, "Log file opened\nProgram started\n");
+
+    //Initialize Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        logAndOptionallyClose(logFile, "Error: Failed to initialize Winsock\n", false, INVALID_SOCKET);
+        return 1;
+    }
+    log(logFile, "Winsock initialized\n");
+
+    //Create socket for server
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == INVALID_SOCKET)
+    {
+        logAndOptionallyClose(logFile, "Error: Failed to create server socket\n", false, INVALID_SOCKET);
+        WSACleanup();
+        return 1;
+    }
+    log(logFile, "Server socket created successfully\n");
+
+    //Set server's address details
+    serverAddress.sin_family = AF_INET; //IPv4
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(port);
+
+    //Bind socket to port
+    if (bind(serverSocket, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+    {
+        logAndOptionallyClose(logFile, "Error: Failed to bind socket\n", true, serverSocket);
+        WSACleanup();
+        return 1;
+    }
+    log(logFile, "Socket bind successful\n");
+
+    //Start listening for incoming connections
+    if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) //SOMAXCONN for multiple clients later 
+    {
+        logAndOptionallyClose(logFile, "Error: Listen failed\n", true, serverSocket);
+        WSACleanup();
+        return 1;
+    }
+    logAndOptionallyClose(logFile, "Listen success. Waiting for client connection\n", false, INVALID_SOCKET);
+
+    int clientId = 1;
+    //Client accept loop
+    while (true)
+    {
+        //Accept connection from client
+        int clientSize = sizeof(clientAddress);
+        clientSocket = accept(serverSocket, (sockaddr*)&clientAddress, &clientSize);
+        if (clientSocket == INVALID_SOCKET)
+        {
+            logAndOptionallyClose(logFile, "Error: Failed to accept client. Finding new client\n", false, clientSocket);
+            continue;
+        }
+        logAndOptionallyClose(logFile, "Client accepted\n", false, clientSocket);
+
+        //Create and detach thread
+        try
+        {
+            thread clientThread(handleClient, clientSocket, ref(logFile), clientId);
+            clientThread.detach();
+        }
+        catch (const system_error& e)
+        {
+            logAndOptionallyClose(logFile, "Error: Failed to thread for client #" + to_string(clientId) + ".Finding new client\n", true, clientSocket);
+        }
+        log(logFile, "Thread created and detached for client #" + to_string(clientId) + "\n");
+        clientId++;
+
+    }//End client accept while loop
+
+    //Close sockets
+    closesocket(clientSocket);
+    closesocket(serverSocket);
+    //Shut down Winsock
+    WSACleanup();
+    return 0;
+}
+
+//Thread function for handling an individual client
+void handleClient(SOCKET clientSocket, ofstream& logFile, int clientId)
+{
+    //Receive initialization message
+    char initBuffer[6];
+    if (receiveAll(clientSocket, initBuffer, sizeof(initBuffer)) != 0)
+    {
+        logAndOptionallyClose(logFile, "Error: Did not receive full initialization message or recv() failed. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+        return;
+    }
+
+    uint16_t type;
+    uint32_t N;
+    //Extract type and N from init buffer and store
+    memcpy(&type, initBuffer, 2);
+    memcpy(&N, initBuffer + 2, 4);
+    //Convert to host byte order
+    type = ntohs(type);
+    N = ntohl(N);
+
+    if (type != 1) //Wrong message type
+    {
+        logAndOptionallyClose(logFile, "Error: Expected Initialization message (Type 1), received Type " + to_string(type) + " instead. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+        return;
+    }
+    logAndOptionallyClose(logFile, "Received initialization message from client. Client #" + to_string(clientId) + " will send " + to_string(N) + " hash requests\n", false, clientSocket);
+
+
+    //Convert to network byte order
+    uint16_t ackType = htons(2);
+    uint32_t responseLength = htonl(N * 38);
+    char ackBuffer[6];
+    //Copy type and length to ackBuffer to send
+    memcpy(ackBuffer, &ackType, 2);
+    memcpy(ackBuffer + 2, &responseLength, 4);
+
+    //Send acknowledgement message
+    if (!sendAll(clientSocket, ackBuffer, sizeof(ackBuffer)))
+    {
+        logAndOptionallyClose(logFile, "Error: Could not send acknowledgement message to client. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+        return;
+    }
+    logAndOptionallyClose(logFile, "Acknowledgement message sent to client #" + to_string(clientId) + "\n", false, clientSocket);
+
+
+    //Receive hash requests
+    int requestCount = 0;
+    while (true)
+    {
+        //Receive header
+        char header[6];
+        int receiveStatus = receiveAll(clientSocket, header, sizeof(header));
+        if (receiveStatus != 0)
+        {
+            logAndOptionallyClose(logFile, (receiveStatus == 1) ? "Client #" + to_string(clientId) + " closed connection\n" : "Error: Did not receive full header or recv() failed. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+            break;
+        }
+        //If receiveStatus == 0 then receive was a success, move on
+
+        uint16_t type;
+        uint32_t payloadLength;
+        //Extract type and length of payload and store
+        memcpy(&type, header, 2);
+        memcpy(&payloadLength, header + 2, 4);
+        //Convert to host byte order
+        type = ntohs(type);
+        payloadLength = ntohl(payloadLength);
+
+        if (type != 3) //Wrong message type
+        {
+            logAndOptionallyClose(logFile, "Error: Expected HashRequest (Type 3), received " + to_string(type) + " instead. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+            break;
+        }
+
+        //Receive payload
+        vector<char> payload(payloadLength);
+        if (receiveAll(clientSocket, payload.data(), payloadLength) != 0)
+        {
+            logAndOptionallyClose(logFile, "Error: Error in receiving hash requests. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+            break;
+        }
+        logAndOptionallyClose(logFile, "Received Hash Request #" + to_string(requestCount) + " from client #" + to_string(clientId) + "\n", false, clientSocket);
+        //Ensure payload length is as advertised in the header of the hash request
+        if (payload.size() != payloadLength)
+        {
+            logAndOptionallyClose(logFile, "Error: Length of payload does not equal advertised length in hash request header. Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+            break;
+        }
+
+        //0 fill payload
+        zeroFill(payload);
+
+        //Convert to Hexadecimal
+        string hexString = hashFunction(payload);
+        log(logFile, "Payload for client #" + to_string(clientId) + " converted to Hex\n");
+
+        //Convert to network byte order
+        uint16_t responseType = htons(4);
+        uint32_t responseIndex = htonl(requestCount);
+        char hashResponse[38];
+        //Copy type, index, and hashed payload into hashResponse to send
+        memcpy(hashResponse, &responseType, 2);
+        memcpy(hashResponse + 2, &responseIndex, 4);
+        memcpy(hashResponse + 6, hexString.c_str(), 32);
+
+        //Send response to client
+        if (!sendAll(clientSocket, hashResponse, sizeof(hashResponse)))
+        {
+            logAndOptionallyClose(logFile, "Error: Failed to send full HashResponse #" + to_string(requestCount) + ". Closing connection with client #" + to_string(clientId) + "\n", true, clientSocket);
+            break;
+        }
+        logAndOptionallyClose(logFile, "HashReponse #" + to_string(requestCount) + " sent to client #" + to_string(clientId) + "\n", false, clientSocket);
+
+        requestCount++;
+    }//End hash request while loop
+    closesocket(clientSocket);
+}
+
+//Ensures all bytes are received
+int receiveAll(SOCKET clientSocket, char* buffer, int length)
+{
+    for (int totalReceived = 0; totalReceived < length;)
+    {
+        int received = recv(clientSocket, buffer + totalReceived, length - totalReceived, 0);
+        if (received == 0)
+            return 1; //Client closed connection
+        if (received == SOCKET_ERROR)
+            return -1; //Failure
+        totalReceived += received;
+    }
+    return 0; //Success
+}
+
+//Ensures all bytes are sent
+bool sendAll(SOCKET clientSocket, const char* buffer, int length)
+{
+    for (int totalSent = 0; totalSent < length;)
+    {
+        int sent = send(clientSocket, buffer + totalSent, length - totalSent, 0);
+        if (sent <= 0)
+            return false; //Failure
+        totalSent += sent;
+    }
+    return true; //Success
+}
+
+void zeroFill(vector<char>& payload)
+{
+    while (payload.size() < 16)
+        payload.push_back('\0');
+}
+
+//Build string of the hexadecimal values of payload's chars and return the string
+string hashFunction(vector<char> payload)
+{
+    string hexString;
+    for (int i = 0; i < payload.size(); i++)
+    {
+        char c = payload.at(i);
+        char hex[3]; //3 for null terminator after the 2 character hexadecimal value
+        sprintf_s(hex, sizeof(hex), "%02X", static_cast<unsigned char>(c));
+        hexString += hex;
+    }
+    return hexString;
+}
+
+//Print message to console, log message to file, and close socket if requested
+void logAndOptionallyClose(ofstream& logFile, const string& message, bool close, SOCKET socket)
+{
+    cout << message;
+    log(logFile, message);
+    if (close)
+        closesocket(socket);
+}
+
+//Print log message to file and flush to ensure instant log
+void log(ofstream& logFile, string logMessage)
+{
+    lock_guard<mutex> lock(logMutex);
+    logFile << logMessage;
+    logFile.flush();
+}

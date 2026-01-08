@@ -1,0 +1,7 @@
+﻿  ClientP3.cpp
+F:\UMD\CIS 427\Programs\Program 3\ClientP3\ClientP3.cpp(133,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+F:\UMD\CIS 427\Programs\Program 3\ClientP3\ClientP3.cpp(191,24): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+F:\UMD\CIS 427\Programs\Program 3\ClientP3\ClientP3.cpp(204,68): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+F:\UMD\CIS 427\Programs\Program 3\ClientP3\ClientP3.cpp(218,73): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+F:\UMD\CIS 427\Programs\Program 3\ClientP3\ClientP3.cpp(253,23): warning C4018: '<': signed/unsigned mismatch
+  ClientP3.vcxproj -> F:\UMD\CIS 427\Programs\Program 3\ClientP3\x64\Debug\ClientP3.exe

@@ -1,0 +1,3 @@
+﻿  ServerP3.cpp
+F:\UMD\CIS 427\Programs\Program 3\ServerP3\ServerP3.cpp(118,36): warning C4101: 'e': unreferenced local variable
+  ServerP3.vcxproj -> F:\UMD\CIS 427\Programs\Program 3\ServerP3\x64\Debug\ServerP3.exe
